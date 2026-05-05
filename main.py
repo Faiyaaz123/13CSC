@@ -1,4 +1,4 @@
-from tkinter import*
+from tkinter import *
 from PIL import Image, ImageTk # imports modules for image resizing and display
 
 name_list = [] # stores all the entered names
@@ -7,20 +7,21 @@ user_name = "" # stores the user's current name
 
 class LoginPage:
  def __init__(self, parent):
+     self.LoginPage = None
      background_color = "#1D61BB"  # sets the background colour
      self.login_frame = Frame(parent, bg=background_color, padx=100, pady=100)
      self.login_frame.grid()
      image = Image.open("Screenshot 2026-04-28 115831.png")
      image = image.resize((250, 125))
      self.photo = ImageTk.PhotoImage(image)
-     self.image_label = Label(self.Loginpage, image=self.photo, bg=background_color)
+     self.image_label = Label(self.LoginPage, image=self.photo, bg=background_color)
      self.image_label.grid(row=0, column=0, pady=(1, 50))
      self.heading_label = Label(self.LoginPage, text="Attendance analytics",
-                                font=("Lilitta one", 14, "bold"), bg=background_color, bd=2, relief="solid", padx=10,
+                                font=("Lilita one", 14, "bold"), bg=background_color, bd=2, relief="solid", padx=10,
                                 pady=5)
      self.user_label.grid(row=2, column=0, pady=10)
      # entry box for the user to input their username
-     self.entry_box = Entry(self.LoginPage, width=20, font=("Verdana", 16), justify=CENTER)
+     self.entry_box = Entry(self.LoginPage, width=20, font=("Verdana", 16),)
      self.entry_box.grid(row=3, column=0, pady=20, )
      self.entry_box.bind("<KeyRelease>", self.validate_name)
      # label to display the error message for if the user types out an invalid name
@@ -28,7 +29,7 @@ class LoginPage:
      self.error_label.grid(row=4, column=0)
      # button to enter the user's name so they can move onto the quiz section and is initially disabled
      self.continue_button = Button(self.LoginPage, text="Enter",
-                                   font=("Lilita one", 12, "bold"), bg="yellow",
+                                   font=("Lilita One", 12, "bold"), bg="yellow",
                                    command=self.name_collect, width=12)
      self.continue_button.grid(row=5, column=0, pady=20)
      self.continue_button.config(state="disabled")
@@ -54,6 +55,11 @@ class LoginPage:
          name_list.append(name)
          self.login_frame.destroy()
 
+ if __name__ == "__main__":
+     root = Tk()  # creates the central Tkinter window
+     root.title("Attendance Analytics")  # name of the window
+     LoginPage: root  # shows the starting screen of the programme(username entry)
+     root.mainloop()  # keeps window open
 
 
 
