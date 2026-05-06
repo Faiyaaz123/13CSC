@@ -13,13 +13,9 @@ class LoginPage:
      self.login_frame.grid()
      image = Image.open("Screenshot 2026-04-28 115831.png")
      image = image.resize((250, 125))
-     self.photo = ImageTk.PhotoImage(image)
+     self.photo = ImageTk.PhotoImage("Screenshot 2026-04-28 115831.png")
      self.image_label = Label(self.LoginPage, image=self.photo, bg=background_color)
      self.image_label.grid(row=0, column=0, pady=(1, 50))
-     self.heading_label = Label(self.LoginPage, text="Attendance analytics",
-                                font=("Lilita one", 14, "bold"), bg=background_color, bd=2, relief="solid", padx=10,
-                                pady=5)
-     self.user_label.grid(row=2, column=0, pady=10)
      # entry box for the user to input their username
      self.entry_box = Entry(self.LoginPage, width=20, font=("Verdana", 16),)
      self.entry_box.grid(row=3, column=0, pady=20, )
