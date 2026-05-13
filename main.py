@@ -15,18 +15,14 @@ class LoginPage:
         self.image_label = Label(self.login_frame, image=self.photo, bg=background_color)
         self.image_label.grid(row=0, column=0, pady=(1, 50))
         # entry box for the user to input their username
-        self.entry_box = Entry(self.login_frame, width=20, font=("Verdana", 16), )
+        self.entry_box = Entry(self.login_frame, width=20, font=("Lilita one", 16), )
         self.entry_box.grid(row=3, column=0, pady=20, )
         self.entry_box.bind("<KeyRelease>", self.validate_name)
         # label to display the error message for if the user types out an invalid name
         self.error_label = Label(self.login_frame, text="", fg="red", bg=background_color, font=("Verdana", 11))
         self.error_label.grid(row=4, column=0)
-        # button to enter the user's name so they can move onto the quiz section and is initially disabled
-        self.continue_button = Button(self.login_frame, text="Enter",
-                                      font=("Lilita One", 12, "bold"), bg="yellow",
-                                      command=self.name_collect, width=12)
-        self.continue_button.grid(row=5, column=0, pady=20)
-        self.continue_button.config(state="disabled")
+
+
 
     # Validates users name
     def validate_name(self, event=None):
