@@ -8,18 +8,16 @@ user_name = "" # stores the user's current name
 class LoginPage:
     def __init__(self, parent):
         background_color = "#1D61BB"  # sets the background colour
-        self.login_frame = Frame(parent, bg=background_color, padx=100, pady=100)
+        self.login_frame = Frame(parent, bg=background_color, padx=100, pady=1)
         self.login_frame.grid()
         self.image = Image.open("Attendance Analytics.png")
         self.photo = ImageTk.PhotoImage(self.image)
         self.image_label = Label(self.login_frame, image=self.photo, bg=background_color)
         self.image_label.grid(row=0, column=0, pady=(1, 50))
         # entry box for the user to input their username
-        self.
         # label to display the error message for if the user types out an invalid name
-        self.error_label = Label(self.login_frame, text="", fg="red", bg=background_color, font=("Verdana", 11))
+        self.error_label = Label(self.login_frame, text="", fg="red", bg=background_color, font=("LilitaOne-Regular.ttf", 11))
         self.error_label.grid(row=4, column=0)
-
 
 
     # Validates users name
@@ -34,6 +32,8 @@ class LoginPage:
         else:  # conditional statement for if the 2 above conditional statements are not met which leads to the enter button being enabled
             self.error_label.config(text="")
             self.continue_button.config(state="normal")
+
+class homepage:
 
     # stores the users name and initiates the quiz
     def name_collect(self):
