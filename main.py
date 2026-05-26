@@ -16,16 +16,20 @@ class LoginPage:
         self.image_label = Label(self.login_frame, image=self.photo, bg=background_color)
         self.image_label.grid(row=0, column=0, pady=(1, 50))
 
+        self.entry_box = Entry(self.login_frame, width=20, font=("Verdana", 16), text="NAME")
+        self.entry_box.grid(row=3, column=0, pady=20, )
+        self.entry_box.bind("<KeyRelease>", self.validate_name)
+
         self.enter_label = Image.open("c5a6df57-414d-4fb3-af81-22dfdfb0ea6d_removalai_preview.png")
         self.buttonphoto = ImageTk.PhotoImage(self.enter_label)
-        self.enterbutton:hover
         self.enter_label = Label(self.login_frame, image=self.buttonphoto, bg=background_color)
         self.enter_label.grid(row=0, column=0, pady=(300, 0), padx=(0, 150))
+        self.enter_label.bind("<KeyRelease>", self.validate_name)
+
+        self.text_label = Label(root, text="NAME", font=("LilitaOne-Regular", 24))
+        self.text_label.grid(row=2, column=0, pady=10)
 
         # entry box for the user to input their username
-        self.entry_box = Entry(self.login_frame, width=20, font=("Lilita one", 16))
-        self.entry_box.grid(row=3, column=0, pady=20,)
-        self.entry_box.bind("<KeyRelease>", self.validate_name)
         # label to display the error message for if the user types out an invalid name
         self.error_label = Label(self.login_frame, text="", fg="red", bg=background_color, font=("LilitaOne-Regular.ttf", 11))
         self.error_label.grid(row=4, column=0)
