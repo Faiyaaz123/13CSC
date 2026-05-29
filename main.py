@@ -8,47 +8,51 @@ user_name = "" # stores the user's current name
 class LoginPage:
     def __init__(self, parent):
         background_color = "#1D61BB"  # sets the background colour
-        self.login_frame = Frame(parent, bg=background_color, padx=100, pady=1)
-        self.login_frame.grid()
 
         self.image = Image.open("Attendance Analytics.png")
         self.photo = ImageTk.PhotoImage(self.image)
-        self.image_label = Label(self.login_frame, image=self.photo, bg=background_color)
-        self.image_label.grid(row=0, column=0, pady=(1, 50))
+        self.img_width, self.img_height = self.image.size
+        parent.geometry(f"{self.img_width}x{self.img_height}")
+        parent.title("Attendance Analytics")
 
-        self.entry_box = Entry(self.login_frame, width=20, font=("Verdana", 16), text="NAME")
-        self.entry_box.grid(row=3, column=0, pady=20, )
-        self.entry_box.bind("<KeyRelease>", self.validate_name)
+        self.login_frame = Frame(parent, bg=background_color)
+        self.login_frame.pack(fill="both", expand=True)
 
-        self.enter_label = Image.open("c5a6df57-414d-4fb3-af81-22dfdfb0ea6d_removalai_preview.png")
-        self.buttonphoto = ImageTk.PhotoImage(self.enter_label)
-        self.enter_label = Label(self.login_frame, image=self.buttonphoto, bg=background_color)
-        self.enter_label.grid(row=0, column=0, pady=(300, 0), padx=(0, 150))
-        self.enter_label.bind("<KeyRelease>", self.validate_name)
+        self.bg_label = Label(self.login_frame, image=self.photo, bd=0)
+        self.bg_label.place(x=0, y=0)  # only exception (background ONLY)
 
-        self.text_label = Label(root, text="NAME", font=("LilitaOne-Regular", 24))
-        self.text_label.grid(row=2, column=0, pady=10)
+        self.bg_label = Label(self.login_frame, image=self.photo, bd=0)
+        self.bg_label.place(x=0, y=0)  # only exception (background ONLY)
 
-        # entry box for the user to input their username
-        # label to display the error message for if the user types out an invalid name
-        self.error_label = Label(self.login_frame, text="", fg="red", bg=background_color, font=("LilitaOne-Regular.ttf", 11))
-        self.error_label.grid(row=4, column=0)
+        self.container = Frame(self.login_frame, bg=background_color)
+        self.container.pack(expand=True)
 
+        self.text_canvas = Canvas(self.container, width=400, height=120, bg=background_color, highlightthickness=0)
+        self.text_canvas.pack(pady=0, padx=(0,100))
 
-    # Validates users name
+        self.text_canvas.create_text(202, 90, text="NAME", font=("Lilita One", 36), fill="black")
+        self.text_canvas.create_text(200, 88, text="NAME", font=("Lilita One", 36), fill="white")
+
+        self.entry_box = Entry(self.container, width=22, font=("Lilita One", 16))
+        self.entry_box.pack(pady=22, padx=(0, 100))
+
+        self.continue_button = Button(self.container, text="ENTER", font=("Lilita One", 14), state="disabled", command=self.name_collect)
+        self.continue_button.pack(pady=0, padx=(0, 100))
+
+        self.error_label = Label(self.container, text="", fg="red", bg=background_color, font=("Lilita One", 11))
+        self.error_label.pack(pady=0, padx=(0, 100))
+
     def validate_name(self, event=None):
         name = self.entry_box.get().strip()
-        if len(name) < 2:  # conditional statement for if the user's typed out name is less than 2 letters
-            self.error_label.config(text="⚠ Name must be at least 2 letters.")
+        if len(name) < 2:
+            self.error_label.config(text="⚠ NAME MUST BE AT LEAST TWO LETTERS.")
             self.continue_button.config(state="disabled")
-        elif not name.isalpha():  # conditional statement for if the user's typed out name does not only contain letters
-            self.error_label.config(text="⚠ Name must contain only letters.")
+        elif not name.isalpha():
+            self.error_label.config(text="⚠ NAME MUST CONTAIN ONLY LETTERS")
             self.continue_button.config(state="disabled")
-        else:  # conditional statement for if the 2 above conditional statements are not met which leads to the enter button being enabled
+        else:
             self.error_label.config(text="")
             self.continue_button.config(state="normal")
-
-class homepage:
 
     # stores the users name and initiates the quiz
     def name_collect(self):
@@ -57,15 +61,18 @@ class homepage:
         if name:
             user_name = name
             name_list.append(name)
-            self.login_frame.destroy()
-
+            print("Current User:", user_name)
+            print("All Names:", name_list)
 
 
 if __name__ == "__main__":
-     root = Tk()  # creates the central Tkinter window
-     root.title("Attendance Analytics")  # name of the window
-     instance = LoginPage(root)  # shows the starting screen of the programme(username entry)
-     root.mainloop()  # keeps window open
+
+
+   root = Tk()
+   LoginPage(root)
+   root.mainloop()
+
+
 
 
 
