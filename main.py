@@ -64,13 +64,26 @@ class LoginPage:
             print("Current User:", user_name)
             print("All Names:", name_list)
 
+class homepage:
+    def __init__(self, parent):
+        background_color = "#D8CAB8"  # sets background colour
+        # sets up frame
 
-if __name__ == "__main__":
+        self.image = Image.open("Attendance Analytics.png")
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.img_width, self.img_height = self.image.size
+        parent.geometry(f"{self.img_width}x{self.img_height}")
+        parent.title("Attendance Analytics")
+
+        self.home_frame = Frame(parent, bg=background_color, padx=100, pady=100)
+        self.home_frame.grid()
+
+        if __name__ == "__main__":
 
 
-   root = Tk()
-   LoginPage(root)
-   root.mainloop()
+            root = Tk()
+            LoginPage(root)
+            root.mainloop()
 
 
 
