@@ -49,6 +49,8 @@ class LoginPage:
            self.bg_label = Label(self.login_frame, image=self.photo, bd=0)
            self.bg_label.place(x=0, y=0)
 
+       self.heading_label.create_text(self.login_frame, text="Welcome to the login page", font=("Lilita One", 64), fill="white")
+
 
        self.container = Frame(self.login_frame, bg=background_color)
        self.container.pack(expand=True)
@@ -151,7 +153,12 @@ class HomePage:
        # Global system exit configuration component
        self.exit_button = Button(self.home_frame, text="EXIT", font=("Lilita One", 12), bg="#D32F2F", fg="white", bd=0,
                                  padx=15, pady=5, command=self.parent.quit)
-       self.exit_button.place(x=30, y=530)
+       self.exit_button.place(x=1800, y=530)
+
+
+       self.back_button = Button(self.home_frame, text="BACK", font=("Lilita One", 12), bg="#D32F2F", fg="white", bd=0,
+                                 padx=15, pady=5, command=self.parent.quit)
+       self.back_button.place(x=15, y=530)
 
 
    def open_calculator(self):
@@ -172,179 +179,223 @@ class HomePage:
 
 
 class CalculatorPage:
-   def __init__(self, parent):
-       self.parent = parent
-       background_color = "#1D61BB"
+    def __init__(self, parent):
+        self.parent = parent
 
+        self.frame = Frame(parent, bg="#1D61BB")
+        self.frame.pack(fill="both", expand=True)
 
-       self.calc_frame = Frame(parent, bg=background_color)
-       self.calc_frame.pack(fill="both", expand=True)
+        Label(
+            self.frame,
+            text="CALCULATOR PAGE",
+            font=("Lilita One", 28),
+            bg="#1D61BB",
+            fg="white"
+        ).pack(pady=(10, 0))
 
+        Label(
+            self.frame,
+            text="CALCULATE YOUR ATTENDANCE(S) BELOW",
+            font="Lilita One",
+            bg="#1D61BB",
+            fg="white"
+        ).pack(pady=(10, 10))
 
-       try:
-           self.image = Image.open(global_background_file)
-           self.photo = ImageTk.PhotoImage(self.image)
-           self.bg_label = Label(self.calc_frame, image=self.photo, bd=0)
-           self.bg_label.place(x=0, y=0)
-           self.bg_label.image = self.photo
-       except Exception:
-           pass
+        self.subject_count = 1
 
+        self.table_frame = Frame(
+            self.frame,
+            bg="#E7B96D",
+            highlightbackground="black",
+            highlightthickness=4
+        )
+        self.table_frame.pack(pady=10)
 
-       self.main_layout = Frame(self.calc_frame, bg=background_color)
-       self.main_layout.pack(expand=True, pady=40)
+        headers = [
+            "SUBJECTS",
+            "DAYS ATTENDED",
+            "TOTAL DAYS",
+            "MIN. ATTENDANCE",
+            "ATTENDANCE"
+        ]
 
+        widths = [20, 20, 18, 22, 20]
 
-       # Dynamic Row Creation Setup
-       self.headers = ["SUBJECTS", "DAYS ATTENDED", "TOTAL DAYS", "GOAL %"]
-       for col_idx, text in enumerate(self.headers):
-           lbl = Label(self.main_layout, text=text, font=("Lilita One", 14), bg=background_color, fg="white", width=15)
-           lbl.grid(row=0, col=col_idx, padx=5, pady=10)
+        for col, header in enumerate(headers):
+            Label(
+                self.table_frame,
+                text=header,
+                font="Lilita One",
+                bg="#E7B96D"
+            ).grid(row=0, column=col, padx=0, pady=10)
 
+        self.subject_entries = []
 
-       self.rows_data = []
-       self.row_counter = 1
-       self.add_row()  # Always start with at least one data entry line
+        self.add_row()
 
+        Button(
+            self.frame,
+            text="CHECK ANALYTICS",
+            font="Lilita One",
+            bg="#7ED957",
+            command=self.open_analytics
+        ).pack(pady=15)
 
-       # Control Panel Elements Layer
-       self.controls_frame = Frame(self.calc_frame, bg=background_color)
-       self.controls_frame.pack(side="bottom", fill="x", pady=20)
+        Label(
+            self.frame,
+            text="NO. OF SUBJECTS",
+            font="Lilita One",
+            bg="#1D61BB",
+            fg="white"
+        ).pack()
 
+        counter_frame = Frame(self.frame, bg="#1D61BB")
+        counter_frame.pack()
 
-       self.back_btn = Button(self.controls_frame, text="BACK", font=("Lilita One", 12), bg="#E0E0E0",
-                              command=self.go_back)
-       self.back_btn.pack(side="left", padx=30)
+        Button(
+            counter_frame,
+            text="-",
+            font=("Lilita One", 20, "bold"),
+            width=2,
+            command=self.remove_row
+        ).pack(side="left", padx=10)
 
+        self.counter_lbl = Label(
+            counter_frame,
+            text=str(self.subject_count),
+            font="Lilita One",
+            bg="#E7B96D",
+            width=3
+        )
+        self.counter_lbl.pack(side="left")
 
-       self.submit_btn = Button(self.controls_frame, text="CHECK ANALYTICS", font=("Lilita One", 14), bg="#FFC107",
-                                command=self.process_calculations)
-       self.submit_btn.pack(side="right", padx=30)
+        Button(
+            counter_frame,
+            text="+",
+            font=("Lilita One", 20, "bold"),
+            width=2,
+            command=self.add_row
+        ).pack(side="left", padx=10)
 
+        add_nav_buttons(
+            self.frame,
+            lambda: self.go_back(),
+            parent.quit
+        )
 
-       # Boundary Logic Counter Matrix
-       self.stepper_frame = Frame(self.controls_frame, bg=background_color)
-       self.stepper_frame.pack(side="bottom", pady=5)
+    def add_row(self):
+        row_num = len(self.subject_entries) + 1
 
+        subject = Entry(self.table_frame, width=18)
+        attended = Entry(self.table_frame, width=15)
+        total = Entry(self.table_frame, width=15)
 
-       Label(self.stepper_frame, text="NO. OF SUBJECTS:", font=("Lilita One", 11), bg=background_color,
-             fg="white").pack(side="left", padx=5)
-       Button(self.stepper_frame, text="-", font=("Lilita One", 12), width=3, command=self.remove_row).pack(
-           side="left")
-       Button(self.stepper_frame, text="+", font=("Lilita One", 12), width=3, command=self.add_row).pack(side="left",
-                                                                                                         padx=5)
+        min_attendance = Label(
+            self.table_frame,
+            text="90%",
+            bg="#E7B96D",
+            font="Lilita One"
+        )
 
+        attendance = Label(
+            self.table_frame,
+            text="-",
+            bg="#E7B96D",
+            font="Lilita One"
+        )
 
-   def add_row(self):
-       if self.row_counter <= 5:  # Safe layout limit to prevent desktop frame clipping
-           r_entries = []
-           for c_idx in range(4):
-               ent = Entry(self.main_layout, font=("Arial", 12), width=14, justify="center")
-               ent.grid(row=self.row_counter, column=c_idx, padx=5, pady=6)
-               if c_idx == 0:
-                   ent.insert(0, f"Subject {self.row_counter}")
-               elif c_idx == 3:
-                   ent.insert(0, "85")  # Standard default benchmark
-               r_entries.append(ent)
-           self.rows_data.append(r_entries)
-           self.row_counter += 1
+        subject.grid(row=row_num, column=0, padx=5, pady=5)
+        attended.grid(row=row_num, column=1, padx=5, pady=5)
+        total.grid(row=row_num, column=2, padx=5, pady=5)
+        min_attendance.grid(row=row_num, column=3, padx=5, pady=5)
+        attendance.grid(row=row_num, column=4, padx=5, pady=5)
 
+        self.subject_entries.append(
+            (subject, attended, total, attendance)
+        )
 
-   def remove_row(self):
-       if len(self.rows_data) > 1:
-           for ent in self.rows_data[-1]:
-               ent.destroy()
-           self.rows_data.pop()
-           self.row_counter -= 1
+        self.subject_count = len(self.subject_entries)
+        self.counter_lbl.config(text=str(self.subject_count))
 
+    def remove_row(self):
+        if len(self.subject_entries) > 1:
+            row = self.subject_entries.pop()
 
-   def process_calculations(self):
-       calculated_results = []
-       for row in self.rows_data:
-           try:
-               sub_name = row[0].get().strip()
-               attended = float(row[1].get().strip())
-               total = float(row[2].get().strip())
-               goal = float(row[3].get().strip())
+            for widget in row:
+                widget.destroy()
 
+            self.subject_count = len(self.subject_entries)
+            self.counter_lbl.config(text=str(self.subject_count))
 
-               if total <= 0 or attended < 0 or goal < 0:
-                   continue  # Guard condition checks invalid data records cleanly
+    def open_analytics(self):
+        self.frame.pack_forget()
+        AnalyticsPage(self.parent)
 
-
-               current_pct = (attended / total) * 100
-               required_days = max(0, int(((goal / 100) * total) - attended))
-
-
-               calculated_results.append({
-                   "subject": sub_name, "current": current_pct, "days_needed": required_days, "goal": goal
-               })
-           except ValueError:
-               pass  # Ignore incomplete fields safely without throwing code crashes
-
-
-       if calculated_results:
-           self.calc_frame.pack_forget()
-           AnalyticsPage(self.parent, calculated_results)
-
-
-   def go_back(self):
-       self.calc_frame.pack_forget()
-       HomePage(self.parent)
-
-
+    def go_back(self):
+        self.frame.pack_forget()
+        HomePage(self.parent)
 
 
 class AnalyticsPage:
-   def __init__(self, parent, results):
-       self.parent = parent
-       background_color = "#1D61BB"
+    def __init__(self, parent):
+        self.parent = parent
 
+        self.frame = Frame(parent, bg="#1D61BB")
+        self.frame.pack(fill="both", expand=True)
 
-       self.analytics_frame = Frame(parent, bg=background_color)
-       self.analytics_frame.pack(fill="both", expand=True)
+        Label(
+            self.frame,
+            text="ANALYTICS PAGE",
+            font=("Lilita One", 28),
+            bg="#1D61BB",
+            fg="white"
+        ).pack(pady=(10, 0))
 
+        Label(
+            self.frame,
+            text="THIS DISPLAYS AN ANALYSIS OF YOUR ATTENDANCE",
+            font="Lilita One",
+            bg="#1D61BB",
+            fg="white"
+        ).pack(pady=(10, 10))
 
-       # Layout Container Block
-       self.center_wrapper = Frame(self.analytics_frame, bg=background_color)
-       self.center_wrapper.pack(expand=True)
+        table_frame = Frame(
+            self.frame,
+            bg="#E7B96D",
+            highlightbackground="black",
+            highlightthickness=4
+        )
+        table_frame.pack(pady=20)
 
+        headers = [
+            "SUBJECTS",
+            "DAYS TO REACH THRESHOLD",
+            "% CHANGE FROM LAST CALCULATION"
+        ]
 
-       title = Label(self.center_wrapper, text="PREDICTIVE PERFORMANCE PROFILE", font=("Lilita One", 20),
-                     bg=background_color, fg="white")
-       title.pack(pady=10)
+        for col, header in enumerate(headers):
+            Label(
+                table_frame,
+                text=header,
+                font="Lilita One",
+                bg="#E7B96D"
+            ).grid(row=0, column=col, padx=20, pady=10)
 
+        for i in range(8):
+            Entry(table_frame, width=20).grid(row=i + 1, column=0, padx=10, pady=5)
+            Entry(table_frame, width=30).grid(row=i + 1, column=1, padx=10, pady=5)
+            Entry(table_frame, width=30).grid(row=i + 1, column=2, padx=10, pady=5)
 
-       # Build individual analytics summary display boxes matching layout 7.png
-       for data in results:
-           card = Frame(self.center_wrapper, bg="#FFFFFF", padx=15, pady=10, highlightthickness=1,
-                        highlightbackground="#FFC107")
-           card.pack(fill="x", pady=8)
+        add_nav_buttons(
+            self.frame,
+            lambda: self.go_back(),
+            parent.quit
+        )
 
+    def go_back(self):
+        self.frame.pack_forget()
+        CalculatorPage(self.parent)
 
-           txt_info = f"{data['subject'].upper()}: Current Attendance is {data['current']:.1f}% (Goal: {data['goal']:.0f}%)"
-           Label(card, text=txt_info, font=("Arial", 11, "bold"), bg="white", fg="black").pack(anchor="w")
-
-
-           if data['current'] >= data['goal']:
-               action_text = "Status: Target secure. Maintain current track."
-               lbl_color = "#2E7D32"
-           else:
-               action_text = f"Action Required: You must attend {data['days_needed']} more consecutive sessions to reach threshold."
-               lbl_color = "#C62828"
-
-
-           Label(card, text=action_text, font=("Arial", 10, "italic"), bg="white", fg=lbl_color).pack(anchor="w",
-                                                                                                      pady=(4, 0))
-
-
-       Button(self.analytics_frame, text="RETURN TO MENU", font=("Lilita One", 12), bg="#FFC107",
-              command=self.go_home).pack(side="bottom", pady=30)
-
-
-   def go_home(self):
-       self.analytics_frame.pack_forget()
-       HomePage(self.parent)
 
 
 
@@ -368,10 +419,10 @@ class FaqPage:
 
 
        faqs = [
-           ("How is the minimum percentage calculated?",
+           ("How is the attendance percentage calculated?",
             "It divides days attended by total academic track terms multiplied by 100."),
-           ("What if my absence has an official medical clearance?",
-            "Provide documentation directly to the administration to update your file codes."),
+           ("How do I avoid lateness/truances?",
+            "try consistently leaving early to have more than enough time to arrive."),
            ("How often should I use the Predictive Analysis tool?",
             "Checking every week helps track trends before percentages drop too low.")
        ]
