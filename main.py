@@ -1,504 +1,258 @@
 import random
-from tkinter import *
-from PIL import Image, ImageTk
+import tkinter as tk
+from tkinter import ttk, messagebox
 
 
-# Global application data structures to satisfy Level 3 data persistence rules
-name_list = []
-user_name = ""
-global_background_file = "Attendance Analytics.png"
+# --- GLOBAL CONFIGURATION ---
+LILITA = "Lilita One"
+BG_COLOR = "#1D61BB"
+EXIT_COLOR = "#D32F2F"
+BACK_COLOR = "#4CAF50"
 
 
-# Hardcoded list of educational attendance insights for the randomizer subsystem (9.png)
 ATTENDANCE_FACTS = [
-   "Missing just 10% of the school year can drastically impact academic advancement.",
-   "Regular school attendance directly correlates with higher tertiary qualification achievements.",
-   "Every single school day missed takes a toll on your final subject credit potential.",
-   "Arriving late to classes disrupts personal concentration and overall classroom flow.",
-   "Establishing strong attendance routines now builds excellent workplace habits for the future."
+   "Missing 10% of the school year impacts academic advancement.",
+   "Regular attendance correlates with higher tertiary achievements.",
+   "Every day missed affects your final subject credit potential.",
+   "Arriving late disrupts concentration and classroom flow.",
+   "Strong attendance builds essential workplace habits."
 ]
 
 
 
 
-class LoginPage:
-   def __init__(self, parent):
-       self.parent = parent
-       background_color = "#1D61BB"
-
-
+class AttendanceApp:
+   def __init__(self, root):
+       self.root = root
+       self.root.geometry("1000x600")
        try:
-           self.image = Image.open(global_background_file)
-           self.photo = ImageTk.PhotoImage(self.image)
-           self.img_width, self.img_height = self.image.size
-       except Exception:
-           # Fallback size parameters if background graphic asset is missing
-           self.img_width, self.img_height = 1000, 600
-           self.photo = None
+           self.root.option_add("*Font", (LILITA, 12))
+       except:
+           self.root.option_add("*Font", ("Arial", 12))
 
 
-       parent.geometry(f"{self.img_width}x{self.img_height}")
-       parent.title("Attendance Analytics - Secure Login")
+       self.container = tk.Frame(root, bg=BG_COLOR)
+       self.container.pack(fill="both", expand=True)
+       self.show_page(LoginPage)
 
 
-       self.login_frame = Frame(parent, bg=background_color)
-       self.login_frame.pack(fill="both", expand=True)
-
-
-       if self.photo:
-           self.bg_label = Label(self.login_frame, image=self.photo, bd=0)
-           self.bg_label.place(x=0, y=0)
-
-       self.heading_label.create_text(self.login_frame, text="Welcome to the login page", font=("Lilita One", 64), fill="white")
-
-
-       self.container = Frame(self.login_frame, bg=background_color)
-       self.container.pack(expand=True)
-
-
-       self.text_canvas = Canvas(self.container, width=400, height=120, bg=background_color, highlightthickness=0)
-       self.text_canvas.pack(pady=0, padx=(0, 100))
-
-
-       self.text_canvas.create_text(202, 90, text="NAME", font=("Lilita One", 36), fill="black")
-       self.text_canvas.create_text(200, 88, text="NAME", font=("Lilita One", 36), fill="white")
-
-
-       self.entry_box = Entry(self.container, width=22, font=("Lilita One", 16), justify="center")
-       self.entry_box.pack(pady=22, padx=(0, 100))
-       self.entry_box.bind("<KeyRelease>", self.validate_name)
-
-
-       self.continue_button = Button(self.container, text="ENTER", font=("Lilita One", 14), state="disabled",
-                                     command=self.name_collect)
-       self.continue_button.pack(pady=0, padx=(0, 100))
-
-
-       self.error_label = Label(self.container, text="", fg="red", bg=background_color, font=("Lilita One", 11))
-       self.error_label.pack(pady=10, padx=(0, 100))
-
-
-   def validate_name(self, event=None):
-       name = self.entry_box.get().strip()
-       if len(name) < 2:
-           self.error_label.config(text="⚠ NAME MUST BE AT LEAST TWO LETTERS.")
-           self.continue_button.config(state="disabled")
-       elif not name.isalpha():
-           self.error_label.config(text="⚠ NAME MUST CONTAIN ONLY LETTERS")
-           self.continue_button.config(state="disabled")
+   def show_page(self, page_class, data=None):
+       for widget in self.container.winfo_children():
+           widget.destroy()
+       if data is not None:
+           page_class(self.container, self, data)
        else:
-           self.error_label.config(text="")
-           self.continue_button.config(state="normal")
+           page_class(self.container, self)
 
 
-   def name_collect(self):
-       global user_name
-       name = self.entry_box.get().strip()
-       if name:
-           user_name = name
-           name_list.append(name)
-           self.login_frame.pack_forget()
-           HomePage(self.parent)
+
+
+# --- NAVIGATION HELPER ---
+def add_nav(frame, app, back_page=None):
+   if back_page:
+       tk.Button(frame, text="BACK", bg=BACK_COLOR, fg="white",
+                 command=lambda: app.show_page(back_page)).place(x=30, y=540)
+   tk.Button(frame, text="EXIT", bg=EXIT_COLOR, fg="white",
+             command=app.root.quit).place(x=920, y=540)
+
+
+
+
+# --- PAGES ---
+class LoginPage:
+   def __init__(self, frame, app):
+       tk.Label(frame, text="LOGIN PAGE", font=(LILITA, 36), bg=BG_COLOR, fg="white").pack(pady=50)
+       self.name_var = tk.StringVar()
+       self.name_var.trace_add("write", self.validate)
+       self.ent = tk.Entry(frame, textvariable=self.name_var, font=(LILITA, 14))
+       self.ent.pack(pady=20)
+       self.feedback_lbl = tk.Label(frame, text="", bg=BG_COLOR, fg="#FFC107")
+       self.feedback_lbl.pack()
+       self.enter_btn = tk.Button(frame, text="ENTER", bg="#FFC107", fg="black", font=(LILITA, 14),
+                                  state="disabled", command=lambda: app.show_page(HomePage))
+       self.enter_btn.pack(pady=20)
+       tk.Button(frame, text="EXIT", bg=EXIT_COLOR, fg="white", font=(LILITA, 12), command=app.root.quit).place(x=920,
+                                                                                                                y=540)
+
+
+   def validate(self, *args):
+       val = self.name_var.get()
+       if val.isalpha() and len(val) >= 2:
+           self.enter_btn.config(state="normal")
+           self.feedback_lbl.config(text="Valid name!", fg="#7ED957")
+       else:
+           self.enter_btn.config(state="disabled")
+           self.feedback_lbl.config(text="Name must have at least two letters and only letters!", fg="#FFFF00")
 
 
 
 
 class HomePage:
-   def __init__(self, parent):
-       self.parent = parent
-       parent.title("Attendance Analytics - Main Hub")
-       background_color = "#1D61BB"
-
-
-       self.home_frame = Frame(parent, bg=background_color)
-       self.home_frame.pack(fill="both", expand=True)
-
-
-       try:
-           self.image = Image.open(global_background_file)
-           self.photo = ImageTk.PhotoImage(self.image)
-           self.bg_label = Label(self.home_frame, image=self.photo, bd=0)
-           self.bg_label.place(x=0, y=0)
-           self.bg_label.image = self.photo
-       except Exception:
-           pass
-
-
-       self.menu_container = Frame(self.home_frame, bg=background_color)
-       self.menu_container.pack(expand=True)
-
-
-       # Welcome banner mapping dynamic state variable
-       self.welcome_lbl = Label(self.menu_container, text=f"WELCOME, {user_name.upper()}!", font=("Lilita One", 28),
-                                bg=background_color, fg="white")
-       self.welcome_lbl.pack(pady=(0, 30))
-
-
-       # Functional Component Navigation Controls
-       self.calc_button = Button(self.menu_container, text="CALCULATOR", font=("Lilita One", 18), bg="#FFC107",
-                                 fg="black", width=22, height=2, bd=0, cursor="hand2", command=self.open_calculator)
-       self.calc_button.pack(pady=12)
-
-
-       self.faq_button = Button(self.menu_container, text="FAQ", font=("Lilita One", 18), bg="#FFC107", fg="black",
-                                width=22, height=2, bd=0, cursor="hand2", command=self.open_faq)
-       self.faq_button.pack(pady=12)
-
-
-       self.facts_button = Button(self.menu_container, text="ATTENDANCE FACTS", font=("Lilita One", 18), bg="#FFC107",
-                                  fg="black", width=22, height=2, bd=0, cursor="hand2", command=self.open_facts)
-       self.facts_button.pack(pady=12)
-
-
-       # Global system exit configuration component
-       self.exit_button = Button(self.home_frame, text="EXIT", font=("Lilita One", 12), bg="#D32F2F", fg="white", bd=0,
-                                 padx=15, pady=5, command=self.parent.quit)
-       self.exit_button.place(x=1800, y=530)
-
-
-       self.back_button = Button(self.home_frame, text="BACK", font=("Lilita One", 12), bg="#D32F2F", fg="white", bd=0,
-                                 padx=15, pady=5, command=self.parent.quit)
-       self.back_button.place(x=15, y=530)
-
-
-   def open_calculator(self):
-       self.home_frame.pack_forget()
-       CalculatorPage(self.parent)
-
-
-   def open_faq(self):
-       self.home_frame.pack_forget()
-       FaqPage(self.parent)
-
-
-   def open_facts(self):
-       self.home_frame.pack_forget()
-       FactsPage(self.parent)
+   def __init__(self, frame, app):
+       tk.Label(frame, text="ATTENDANCE ANALYTICS", font=(LILITA, 36), bg=BG_COLOR, fg="white").pack(pady=50)
+       btn_style = {"bg": "#FFC107", "fg": "black", "font": (LILITA, 14), "width": 20, "height": 2}
+       tk.Button(frame, text="CALCULATOR", **btn_style, command=lambda: app.show_page(CalculatorPage)).pack(pady=10)
+       tk.Button(frame, text="FAQ", **btn_style, command=lambda: app.show_page(FaqPage)).pack(pady=10)
+       tk.Button(frame, text="FACTS", **btn_style, command=lambda: app.show_page(FactsPage)).pack(pady=10)
+       add_nav(frame, app, None)
 
 
 
 
 class CalculatorPage:
-    def __init__(self, parent):
-        self.parent = parent
+   def __init__(self, frame, app):
+       self.frame = frame
+       self.app = app
+       tk.Label(frame, text="ATTENDANCE CALCULATOR", font=(LILITA, 28), bg=BG_COLOR, fg="white").pack(pady=20)
+       self.tree = ttk.Treeview(frame, columns=("Subject", "Attended", "Total", "Desired", "Percentage"),
+                                show="headings", height=8)
+       for col in ["Subject", "Attended", "Total", "Desired", "Percentage"]:
+           self.tree.heading(col, text=col)
+           self.tree.column(col, width=120)
+       self.tree.pack(pady=10)
 
-        self.frame = Frame(parent, bg="#1D61BB")
-        self.frame.pack(fill="both", expand=True)
 
-        Label(
-            self.frame,
-            text="CALCULATOR PAGE",
-            font=("Lilita One", 28),
-            bg="#1D61BB",
-            fg="white"
-        ).pack(pady=(10, 0))
+       input_f = tk.Frame(frame, bg="#E7B96D", padx=15, pady=15)
+       input_f.pack(pady=5)
+       self.s, self.a, self.t, self.d = [tk.Entry(input_f, width=10) for _ in range(4)]
+       for e in [self.s, self.a, self.t, self.d]: e.pack(side="left", padx=5)
 
-        Label(
-            self.frame,
-            text="CALCULATE YOUR ATTENDANCE(S) BELOW",
-            font="Lilita One",
-            bg="#1D61BB",
-            fg="white"
-        ).pack(pady=(10, 10))
 
-        self.subject_count = 1
+       tk.Button(input_f, text="+", command=self.add_row).pack(side="left", padx=5)
+       tk.Button(input_f, text="-", command=self.remove_latest_row).pack(side="left", padx=5)
+       self.action_btn = tk.Button(frame, text="CALCULATE", bg="#FFC107", fg="black", font=(LILITA, 14),
+                                   command=self.calculate)
+       self.action_btn.pack(pady=20)
+       add_nav(frame, app, HomePage)
 
-        self.table_frame = Frame(
-            self.frame,
-            bg="#E7B96D",
-            highlightbackground="black",
-            highlightthickness=4
-        )
-        self.table_frame.pack(pady=10)
 
-        headers = [
-            "SUBJECTS",
-            "DAYS ATTENDED",
-            "TOTAL DAYS",
-            "MIN. ATTENDANCE",
-            "ATTENDANCE"
-        ]
+   def add_row(self):
+       self.tree.insert("", "end", values=(self.s.get(), self.a.get(), self.t.get(), self.d.get(), ""))
 
-        widths = [20, 20, 18, 22, 20]
 
-        for col, header in enumerate(headers):
-            Label(
-                self.table_frame,
-                text=header,
-                font="Lilita One",
-                bg="#E7B96D"
-            ).grid(row=0, column=col, padx=0, pady=10)
+   def remove_latest_row(self):
+       children = self.tree.get_children()
+       if children: self.tree.delete(children[-1])
 
-        self.subject_entries = []
 
-        self.add_row()
+   def calculate(self):
+       for item in self.tree.get_children():
+           try:
+               vals = self.tree.item(item, 'values')
+               perc = (float(vals[1]) / float(vals[2])) * 100
+               self.tree.set(item, column="Percentage", value=f"{perc:.1f}%")
+           except:
+               self.tree.set(item, column="Percentage", value="Error")
+       self.action_btn.config(text="CHECK ANALYTICS", command=self.go_to_analytics)
 
-        Button(
-            self.frame,
-            text="CHECK ANALYTICS",
-            font="Lilita One",
-            bg="#7ED957",
-            command=self.open_analytics
-        ).pack(pady=15)
 
-        Label(
-            self.frame,
-            text="NO. OF SUBJECTS",
-            font="Lilita One",
-            bg="#1D61BB",
-            fg="white"
-        ).pack()
+   def go_to_analytics(self):
+       # FIX: Collect ALL 4 raw inputs instead of just Sub and Percentage string
+       results = []
+       for i in self.tree.get_children():
+           v = self.tree.item(i, 'values')
+           results.append((v[0], float(v[1]), float(v[2]), float(v[3])))
+       self.app.show_page(AnalyticsPage, data=results)
 
-        counter_frame = Frame(self.frame, bg="#1D61BB")
-        counter_frame.pack()
 
-        Button(
-            counter_frame,
-            text="-",
-            font=("Lilita One", 20, "bold"),
-            width=2,
-            command=self.remove_row
-        ).pack(side="left", padx=10)
-
-        self.counter_lbl = Label(
-            counter_frame,
-            text=str(self.subject_count),
-            font="Lilita One",
-            bg="#E7B96D",
-            width=3
-        )
-        self.counter_lbl.pack(side="left")
-
-        Button(
-            counter_frame,
-            text="+",
-            font=("Lilita One", 20, "bold"),
-            width=2,
-            command=self.add_row
-        ).pack(side="left", padx=10)
-
-        add_nav_buttons(
-            self.frame,
-            lambda: self.go_back(),
-            parent.quit
-        )
-
-    def add_row(self):
-        row_num = len(self.subject_entries) + 1
-
-        subject = Entry(self.table_frame, width=18)
-        attended = Entry(self.table_frame, width=15)
-        total = Entry(self.table_frame, width=15)
-
-        min_attendance = Label(
-            self.table_frame,
-            text="90%",
-            bg="#E7B96D",
-            font="Lilita One"
-        )
-
-        attendance = Label(
-            self.table_frame,
-            text="-",
-            bg="#E7B96D",
-            font="Lilita One"
-        )
-
-        subject.grid(row=row_num, column=0, padx=5, pady=5)
-        attended.grid(row=row_num, column=1, padx=5, pady=5)
-        total.grid(row=row_num, column=2, padx=5, pady=5)
-        min_attendance.grid(row=row_num, column=3, padx=5, pady=5)
-        attendance.grid(row=row_num, column=4, padx=5, pady=5)
-
-        self.subject_entries.append(
-            (subject, attended, total, attendance)
-        )
-
-        self.subject_count = len(self.subject_entries)
-        self.counter_lbl.config(text=str(self.subject_count))
-
-    def remove_row(self):
-        if len(self.subject_entries) > 1:
-            row = self.subject_entries.pop()
-
-            for widget in row:
-                widget.destroy()
-
-            self.subject_count = len(self.subject_entries)
-            self.counter_lbl.config(text=str(self.subject_count))
-
-    def open_analytics(self):
-        self.frame.pack_forget()
-        AnalyticsPage(self.parent)
-
-    def go_back(self):
-        self.frame.pack_forget()
-        HomePage(self.parent)
 
 
 class AnalyticsPage:
-    def __init__(self, parent):
-        self.parent = parent
+   def __init__(self, frame, app, data=None):
+       tk.Label(frame, text="PREDICTIVE ANALYTICS", font=(LILITA, 28), bg=BG_COLOR, fg="white").pack(pady=20)
+       df = tk.Frame(frame, bg="#E7B96D", padx=20, pady=20)
+       df.pack(fill="x", padx=50)
 
-        self.frame = Frame(parent, bg="#1D61BB")
-        self.frame.pack(fill="both", expand=True)
 
-        Label(
-            self.frame,
-            text="ANALYTICS PAGE",
-            font=("Lilita One", 28),
-            bg="#1D61BB",
-            fg="white"
-        ).pack(pady=(10, 0))
+       if data:
+           for sub, attended, total, desired in data:
+               current_perc = (attended / total) * 100
+               row_f = tk.Frame(df, bg="#E7B96D")
+               row_f.pack(fill="x", pady=5)
 
-        Label(
-            self.frame,
-            text="THIS DISPLAYS AN ANALYSIS OF YOUR ATTENDANCE",
-            font="Lilita One",
-            bg="#1D61BB",
-            fg="white"
-        ).pack(pady=(10, 10))
 
-        table_frame = Frame(
-            self.frame,
-            bg="#E7B96D",
-            highlightbackground="black",
-            highlightthickness=4
-        )
-        table_frame.pack(pady=20)
+               if current_perc >= desired:
+                   msg = "Minimum Met!"
+                   color = "#7ED957"
+               else:
+                   # Mathematical formula for consecutive days needed to reach threshold
+                   needed = ((desired * total) - (attended * 100)) / (100 - desired)
+                   msg = f"Need {int(needed) + 1} more days"
+                   color = "#D32F2F"
+               tk.Label(row_f, text=f"{sub}: {msg}", font=(LILITA, 14), bg=color, fg="white", padx=10).pack(fill="x")
 
-        headers = [
-            "SUBJECTS",
-            "DAYS TO REACH THRESHOLD",
-            "% CHANGE FROM LAST CALCULATION"
-        ]
 
-        for col, header in enumerate(headers):
-            Label(
-                table_frame,
-                text=header,
-                font="Lilita One",
-                bg="#E7B96D"
-            ).grid(row=0, column=col, padx=20, pady=10)
-
-        for i in range(8):
-            Entry(table_frame, width=20).grid(row=i + 1, column=0, padx=10, pady=5)
-            Entry(table_frame, width=30).grid(row=i + 1, column=1, padx=10, pady=5)
-            Entry(table_frame, width=30).grid(row=i + 1, column=2, padx=10, pady=5)
-
-        add_nav_buttons(
-            self.frame,
-            lambda: self.go_back(),
-            parent.quit
-        )
-
-    def go_back(self):
-        self.frame.pack_forget()
-        CalculatorPage(self.parent)
-
+       add_nav(frame, app, CalculatorPage)
 
 
 
 
 class FaqPage:
-   def __init__(self, parent):
-       self.parent = parent
-       background_color = "#1D61BB"
+   def __init__(self, frame, app):
+       self.frame = frame
+       self.app = app
 
 
-       self.faq_frame = Frame(parent, bg=background_color)
-       self.faq_frame.pack(fill="both", expand=True)
+       # Header
+       tk.Label(frame, text="FREQUENTLY ASKED QUESTIONS", font=(LILITA, 22),
+                bg=BG_COLOR, fg="white").pack(pady=20)
 
 
-       self.center_wrapper = Frame(self.faq_frame, bg=background_color)
-       self.center_wrapper.pack(expand=True)
+       # Container for the FAQ list
+       self.faq_container = tk.Frame(frame, bg=BG_COLOR)
+       self.faq_container.pack(expand=True, fill="both", padx=50)
 
 
-       Label(self.center_wrapper, text="FREQUENTLY ASKED QUESTIONS", font=("Lilita One", 22), bg=background_color,
-             fg="white").pack(pady=15)
-
-
+       # FAQ Data
        faqs = [
            ("How is the attendance percentage calculated?",
             "It divides days attended by total academic track terms multiplied by 100."),
            ("How do I avoid lateness/truances?",
-            "try consistently leaving early to have more than enough time to arrive."),
+            "Try consistently leaving early to have more than enough time to arrive."),
            ("How often should I use the Predictive Analysis tool?",
             "Checking every week helps track trends before percentages drop too low.")
        ]
 
 
+       # The Loop that creates the "boxed" look
        for q, a in faqs:
-           box = Frame(self.center_wrapper, bg="#2E66B6", padx=10, pady=8, bd=1, relief="groove")
+           # This frame acts as the background box for each Q&A
+           box = tk.Frame(self.faq_container, bg="#2E66B6", padx=10, pady=8,
+                          bd=1, relief="groove")
            box.pack(fill="x", pady=6)
-           Label(box, text=f"Q: {q}", font=("Arial", 11, "bold"), bg="#2E66B6", fg="#FFC107", anchor="w").pack(
-               fill="x")
-           Label(box, text=a, font=("Arial", 10), bg="#2E66B6", fg="white", wraplength=500, justify="left",
-                 anchor="w").pack(fill="x", pady=(2, 0))
 
 
-       Button(self.faq_frame, text="BACK TO HUB", font=("Lilita One", 12), bg="#E0E0E0", command=self.go_back).pack(
-           side="bottom", pady=25)
+           # The Question Label
+           tk.Label(box, text=f"Q: {q}", font=("Arial", 11, "bold"),
+                    bg="#2E66B6", fg="#FFC107", anchor="w").pack(fill="x")
 
 
-   def go_back(self):
-       self.faq_frame.pack_forget()
-       HomePage(self.parent)
+           # The Answer Label
+           tk.Label(box, text=a, font=("Arial", 10), bg="#2E66B6", fg="white",
+                    wraplength=500, justify="left", anchor="w").pack(fill="x", pady=(2, 0))
+
+
+       add_nav(frame, app, HomePage)
 
 
 
 
 class FactsPage:
-   def __init__(self, parent):
-       self.parent = parent
-       background_color = "#1D61BB"
-
-
-       self.facts_frame = Frame(parent, bg=background_color)
-       self.facts_frame.pack(fill="both", expand=True)
-
-
-       self.center_wrapper = Frame(self.facts_frame, bg=background_color)
-       self.center_wrapper.pack(expand=True)
-
-
-       Label(self.center_wrapper, text="ATTENDANCE RESEARCH INSIGHTS", font=("Lilita One", 22), bg=background_color,
-             fg="white").pack(pady=20)
-
-
-       # Dynamic text container block mapping layout 9.png
-       self.fact_display = Message(self.center_wrapper, text="Click 'GENERATE' to load an attendance fact module.",
-                                   font=("Arial", 13, "italic"), bg="#FFFFFF", fg="#333333", width=450, padx=20,
-                                   pady=20, relief="sunken", bd=1)
-       self.fact_display.pack(pady=15)
-
-
-       self.gen_btn = Button(self.center_wrapper, text="GENERATE NEW FACT", font=("Lilita One", 13), bg="#FFC107",
-                             fg="black", padx=10, pady=5, command=self.cycle_facts)
-       self.gen_btn.pack(pady=10)
-
-
-       Button(self.facts_frame, text="BACK TO HUB", font=("Lilita One", 12), bg="#E0E0E0", command=self.go_back).pack(
-           side="bottom", pady=35)
-
-
-   def cycle_facts(self):
-       current_fact = random.choice(ATTENDANCE_FACTS)
-       self.fact_display.config(text=current_fact)
-
-
-   def go_back(self):
-       self.facts_frame.pack_forget()
-       HomePage(self.parent)
+   def __init__(self, frame, app):
+       tk.Label(frame, text="ATTENDANCE FACTS", font=(LILITA, 28), bg=BG_COLOR, fg="white").pack(pady=20)
+       self.lbl = tk.Label(frame, text="Click to generate", bg="white", width=50, height=5)
+       self.lbl.pack(pady=20)
+       tk.Button(frame, text="GENERATE", command=lambda: self.lbl.config(text=random.choice(ATTENDANCE_FACTS))).pack()
+       add_nav(frame, app, HomePage)
 
 
 
 
 if __name__ == "__main__":
-   root = Tk()
-   root.resizable(False, False)  # Keeps layouts locked to your specific image frame sizes
-   app = LoginPage(root)
+   root = tk.Tk()
+   app = AttendanceApp(root)
    root.mainloop()
+
 
 
 
