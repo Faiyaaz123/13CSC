@@ -115,7 +115,10 @@ class CalculatorPage:
        input_f = tk.Frame(frame, bg="#E7B96D", padx=15, pady=15)
        input_f.pack(pady=5)
        self.s, self.a, self.t, self.d = [tk.Entry(input_f, width=10) for _ in range(4)]
-       for e in [self.s, self.a, self.t, self.d]: e.pack(side="left", padx=5)
+       # Adding labels for clarity in the input box
+       for e, lbl in zip([self.s, self.a, self.t, self.d], ["Sub", "Att", "Tot", "Des"]):
+           tk.Label(input_f, text=lbl, bg="#E7B96D").pack(side="left")
+           e.pack(side="left", padx=5)
 
 
        tk.Button(input_f, text="+", command=self.add_row).pack(side="left", padx=5)
@@ -139,20 +142,36 @@ class CalculatorPage:
        for item in self.tree.get_children():
            try:
                vals = self.tree.item(item, 'values')
-               perc = (float(vals[1]) / float(vals[2])) * 100
+               attended = float(vals[1])
+               total = float(vals[2])
+
+
+               # Validation Logic: Prevent Attended > Total
+               if attended > total:
+                   messagebox.showerror("Input Error",
+                                        f"Invalid data in '{vals[0]}': Attended days cannot exceed total days.")
+                   self.tree.set(item, column="Percentage", value="Invalid")
+                   return  # Stop execution to prevent moving to analytics with bad data
+
+
+               perc = (attended / total) * 100
                self.tree.set(item, column="Percentage", value=f"{perc:.1f}%")
-           except:
+           except ValueError:
                self.tree.set(item, column="Percentage", value="Error")
+
+
+       # Only change button function after successful validation
        self.action_btn.config(text="CHECK ANALYTICS", command=self.go_to_analytics)
 
 
    def go_to_analytics(self):
-       # FIX: Collect ALL 4 raw inputs instead of just Sub and Percentage string
        results = []
        for i in self.tree.get_children():
            v = self.tree.item(i, 'values')
+           # Ensure we are passing valid numbers to the next page
            results.append((v[0], float(v[1]), float(v[2]), float(v[3])))
        self.app.show_page(AnalyticsPage, data=results)
+
 
 
 
@@ -210,7 +229,8 @@ class FaqPage:
            ("How do I avoid lateness/truances?",
             "Try consistently leaving early to have more than enough time to arrive."),
            ("How often should I use the Predictive Analysis tool?",
-            "Checking every week helps track trends before percentages drop too low.")
+            "Checking every week helps track trends before percentages drop too low."
+            "The ministry of education advises a min attendance of 90%")
        ]
 
 
@@ -223,12 +243,12 @@ class FaqPage:
 
 
            # The Question Label
-           tk.Label(box, text=f"Q: {q}", font=("Arial", 11, "bold"),
+           tk.Label(box, text=f"Q: {q}", font=("Lilita One", 11, "bold"),
                     bg="#2E66B6", fg="#FFC107", anchor="w").pack(fill="x")
 
 
            # The Answer Label
-           tk.Label(box, text=a, font=("Arial", 10), bg="#2E66B6", fg="white",
+           tk.Label(box, text=a, font=("Lilita One", 10), bg="#2E66B6", fg="white",
                     wraplength=500, justify="left", anchor="w").pack(fill="x", pady=(2, 0))
 
 
@@ -239,11 +259,26 @@ class FaqPage:
 
 class FactsPage:
    def __init__(self, frame, app):
+       self.last_fact = None  # Initialize to keep track of the last displayed fact
        tk.Label(frame, text="ATTENDANCE FACTS", font=(LILITA, 28), bg=BG_COLOR, fg="white").pack(pady=20)
-       self.lbl = tk.Label(frame, text="Click to generate", bg="white", width=50, height=5)
+       self.lbl = tk.Label(frame, text="Click to generate", bg="white", width=50, height=5, wraplength=400)
        self.lbl.pack(pady=20)
-       tk.Button(frame, text="GENERATE", command=lambda: self.lbl.config(text=random.choice(ATTENDANCE_FACTS))).pack()
+
+
+       # Use a method to handle the logic of avoiding duplicates
+       tk.Button(frame, bg="#FFC107", text="GENERATE", command=self.generate_fact).pack()
        add_nav(frame, app, HomePage)
+
+
+   def generate_fact(self):
+       # Keep picking a random fact as long as it matches the last one
+       new_fact = random.choice(ATTENDANCE_FACTS)
+       while new_fact == self.last_fact and len(ATTENDANCE_FACTS) > 1:
+           new_fact = random.choice(ATTENDANCE_FACTS)
+
+
+       self.last_fact = new_fact
+       self.lbl.config(text=new_fact)
 
 
 
