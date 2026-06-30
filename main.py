@@ -90,7 +90,7 @@ class LoginPage:
 class HomePage:
    def __init__(self, frame, app):
        tk.Label(frame, text="ATTENDANCE ANALYTICS", font=(LILITA, 36), bg=BG_COLOR, fg="white").pack(pady=50)
-       btn_style = {"bg": "#FFC107", "fg": "black", "font": (LILITA, 14), "width": 20, "height": 2}
+       btn_style = {"bg": "#FFC107", "fg": "black", "font": (LILITA, 14), "width": 20, "height": 2, "corner_radius": 15}
        tk.Button(frame, text="CALCULATOR", **btn_style, command=lambda: app.show_page(CalculatorPage)).pack(pady=10)
        tk.Button(frame, text="FAQ", **btn_style, command=lambda: app.show_page(FaqPage)).pack(pady=10)
        tk.Button(frame, text="FACTS", **btn_style, command=lambda: app.show_page(FactsPage)).pack(pady=10)
